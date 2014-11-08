@@ -3,7 +3,7 @@
 	android:orientation="vertical"
 	android:layout_width="fill_parent"
     android:layout_height="fill_parent">
-<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<TableLayout
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:stretchColumns="1">
@@ -20,6 +20,14 @@
 		    android:inputType="numberDecimal"
 		    android:text="1.0"
 		    />
+    </TableRow>
+    <TableRow>
+            <SeekBar
+                android:layout_column="1"
+                android:id="@+id/seekBar1"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:progress="50" />
     </TableRow>
     <TableRow>
         <TextView
