@@ -58,6 +58,13 @@
 		    />
     </TableRow>
 	</TableLayout>
+	<Button android:id="@+id/fileButton"
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+           android:textSize="48sp"
+	    android:text="Browse"
+	    android:onClick="browse" />
+	
 	<Button android:id="@+id/button"
 	    android:layout_width="match_parent"
 	    android:layout_height="wrap_content"

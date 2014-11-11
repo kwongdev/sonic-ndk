@@ -15,6 +15,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.media.MediaCodec;
 import android.media.MediaCodec.BufferInfo;
@@ -28,8 +29,8 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
 public class SonicTest extends Activity {
-	public static int SAMPLING_FREQUENCY = 44100;
-	public static int CHANNEL_COUNT = 2;
+	public static int samplingFrequency = 44100;
+	public static int channelCount = 2;
 	float speed = 1.0f;
 	private PlayerThread mPlayer = null;
 	
@@ -58,7 +59,7 @@ public class SonicTest extends Activity {
 				speed = progress / 50f;
 				Log.v("SonicTest", "speed: " + speed);
 			}       
-		});  
+		});
 		
 		if (mPlayer == null) {
 			mPlayer = new PlayerThread();
@@ -67,9 +68,13 @@ public class SonicTest extends Activity {
 		}
 		
 	}
+	
+	public void browse(View view) {
+		Intent browseIntent = new Intent(this, FileBrowser.class);
+		startActivity(browseIntent);
+	}
     
-    public void play(View view)
-    {
+    public void play(View view) {
         new Thread(new Runnable() 
         {
             public void run()
@@ -78,8 +83,8 @@ public class SonicTest extends Activity {
             	final EditText rateEdit = (EditText) findViewById(R.id.rate);
             	float pitch = Float.parseFloat(pitchEdit.getText().toString());
             	float rate = Float.parseFloat(rateEdit.getText().toString());
-                AndroidAudioDevice device = new AndroidAudioDevice(SAMPLING_FREQUENCY, CHANNEL_COUNT);
-                Sonic sonic = new Sonic(SAMPLING_FREQUENCY, CHANNEL_COUNT);
+                AndroidAudioDevice device = new AndroidAudioDevice(samplingFrequency, channelCount);
+                Sonic sonic = new Sonic(samplingFrequency, channelCount);
                 byte samples[] = new byte[4096];
                 byte modifiedSamples[] = new byte[2048];
                 
@@ -113,6 +118,7 @@ public class SonicTest extends Activity {
 				    }
 				    
 				    device.flush();
+				    if (byteQueue.peek() == null) {break;}
 				    soundFile = new ByteArrayInputStream(byteQueue.poll());
 				}
             }
@@ -146,8 +152,8 @@ public class SonicTest extends Activity {
 
 			for (int i = 0; i < extractor.getTrackCount(); i++) {
 				MediaFormat format = extractor.getTrackFormat(i);
-				SAMPLING_FREQUENCY = format.getInteger(MediaFormat.KEY_SAMPLE_RATE);
-				CHANNEL_COUNT = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT);
+				samplingFrequency = format.getInteger(MediaFormat.KEY_SAMPLE_RATE);
+				channelCount = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT);
 				String mime = format.getString(MediaFormat.KEY_MIME);
 				if (mime.startsWith("audio/")) {
 					extractor.selectTrack(i);
