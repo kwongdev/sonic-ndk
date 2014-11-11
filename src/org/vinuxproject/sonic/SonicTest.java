@@ -11,6 +11,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import android.app.Activity;
 import android.content.res.AssetFileDescriptor;
@@ -28,12 +30,11 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 public class SonicTest extends Activity {
 	public static int SAMPLING_FREQUENCY = 44100;
 	public static int CHANNEL_COUNT = 2;
-//	public static final int SAMPLING_FREQUENCY = 22050;
 	float speed = 1.0f;
 	private PlayerThread mPlayer = null;
 	
-	byte[] audioArray = null;
-
+	Queue<byte[]> byteQueue = new ConcurrentLinkedQueue<byte[]>();
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -64,6 +65,7 @@ public class SonicTest extends Activity {
 			Log.v("SonicTest", "starting decoding");
 			mPlayer.start();
 		}
+		
 	}
     
     public void play(View view)
@@ -80,10 +82,10 @@ public class SonicTest extends Activity {
                 Sonic sonic = new Sonic(SAMPLING_FREQUENCY, CHANNEL_COUNT);
                 byte samples[] = new byte[4096];
                 byte modifiedSamples[] = new byte[2048];
-                InputStream soundFile = new ByteArrayInputStream(audioArray);
-
-				if(soundFile != null) {
-				    
+                
+                while (byteQueue.isEmpty()) { }
+                InputStream soundFile = new ByteArrayInputStream(byteQueue.poll());
+                while (soundFile != null) {
 				    sonic.setPitch(pitch);
 				    sonic.setRate(rate);
 				    
@@ -111,6 +113,7 @@ public class SonicTest extends Activity {
 				    }
 				    
 				    device.flush();
+				    soundFile = new ByteArrayInputStream(byteQueue.poll());
 				}
             }
         } ).start();
@@ -131,7 +134,7 @@ public class SonicTest extends Activity {
 //				// TODO Auto-generated catch block
 //				e.printStackTrace();
 //			}
-			AssetFileDescriptor afd = getApplicationContext().getResources().openRawResourceFd(R.raw.howlingabyss);
+			AssetFileDescriptor afd = getApplicationContext().getResources().openRawResourceFd(R.raw.get9);
 			if (afd == null) return;
 			try {
 				extractor.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
@@ -205,15 +208,9 @@ public class SonicTest extends Activity {
 			        int a = buffer.position();
 			        buffer.get(b);
 			        buffer.position(a);
-			        
-			        if (audioArray == null) {
-			        	audioArray = b;
-			        } else {
-			        	byte[] c = new byte[audioArray.length + b.length];
-			        	System.arraycopy(audioArray, 0, c, 0, audioArray.length);
-			        	System.arraycopy(b, 0, c, audioArray.length, b.length);
-			        	audioArray = c;
-			        }
+
+			        byteQueue.offer(b);
+//			        Log.v("DecodeActivity", "adding to queue");
 			        
 			        decoder.releaseOutputBuffer(outIndex, true);
 			        break;
