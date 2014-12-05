@@ -15,13 +15,12 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import android.app.Activity;
-import android.content.Intent;
-import android.content.res.AssetFileDescriptor;
 import android.media.MediaCodec;
 import android.media.MediaCodec.BufferInfo;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -62,7 +61,7 @@ public class SonicTest extends Activity {
 		});
 		
 		if (mPlayer == null) {
-			mPlayer = new PlayerThread();
+			mPlayer = new PlayerThread(byteQueue);
 			Log.v("SonicTest", "starting decoding");
 			mPlayer.start();
 		}
@@ -70,8 +69,7 @@ public class SonicTest extends Activity {
 	}
 	
 	public void browse(View view) {
-		Intent browseIntent = new Intent(this, FileBrowser.class);
-		startActivity(browseIntent);
+		// do something with file browser
 	}
     
     public void play(View view) {
@@ -128,27 +126,30 @@ public class SonicTest extends Activity {
 	private class PlayerThread extends Thread {
 		private MediaExtractor extractor;
 		private MediaCodec decoder;
+		private final Queue<byte[]> queue;
 
-		public PlayerThread() {}
+		public PlayerThread(Queue<byte[]> q) {
+			this.queue = q;
+		}
 
 		@Override
 		public void run() {
 			extractor = new MediaExtractor();
-//			try {
-//				extractor.setDataSource(Environment.getExternalStorageDirectory().getPath() + "/Download/whatohyeah.mp3");
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-			AssetFileDescriptor afd = getApplicationContext().getResources().openRawResourceFd(R.raw.get9);
-			if (afd == null) return;
 			try {
-				extractor.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
-				afd.close();
-			} catch (IOException e1) {
+				extractor.setDataSource(Environment.getExternalStorageDirectory().getPath() + "/Download/whatohyeah.mp3");
+			} catch (IOException e) {
 				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				e.printStackTrace();
 			}
+//			AssetFileDescriptor afd = getApplicationContext().getResources().openRawResourceFd(R.raw.get9);
+//			if (afd == null) return;
+//			try {
+//				extractor.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
+//				afd.close();
+//			} catch (IOException e1) {
+//				// TODO Auto-generated catch block
+//				e1.printStackTrace();
+//			}
 
 			for (int i = 0; i < extractor.getTrackCount(); i++) {
 				MediaFormat format = extractor.getTrackFormat(i);
@@ -215,7 +216,7 @@ public class SonicTest extends Activity {
 			        buffer.get(b);
 			        buffer.position(a);
 
-			        byteQueue.offer(b);
+			        queue.offer(b);
 //			        Log.v("DecodeActivity", "adding to queue");
 			        
 			        decoder.releaseOutputBuffer(outIndex, true);
