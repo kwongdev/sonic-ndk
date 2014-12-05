@@ -136,7 +136,7 @@ public class SonicTest extends Activity {
 		public void run() {
 			extractor = new MediaExtractor();
 			try {
-				extractor.setDataSource(Environment.getExternalStorageDirectory().getPath() + "/Download/whatohyeah.mp3");
+				extractor.setDataSource(Environment.getExternalStorageDirectory().getPath() + "/Download/test.mp3");
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
